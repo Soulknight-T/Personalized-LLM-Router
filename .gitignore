@@ -1,0 +1,7 @@
+data/raw/*
+data/processed/*
+!.gitkeep
+__pycache__/
+*.pyc
+venv/
+saved_models/gsm8k/
