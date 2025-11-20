@@ -1,0 +1,9 @@
+dataset_root: "./data" # Root of datasets
+
+dataset_name: "chatbot_arena" # [chatbot_arena, gsm8k, mmlu, mt_bench]
+
+ckpt_path: "./checkpoints_han"
+
+seed: 42
+epochs: 350
+
