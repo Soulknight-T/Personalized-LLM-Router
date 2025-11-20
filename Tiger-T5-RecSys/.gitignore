@@ -4,4 +4,7 @@ data/processed/*
 __pycache__/
 *.pyc
 venv/
-saved_models/gsm8k/
+saved_models/
+tiger.ipynb
+*.pth
+tiger_results.csv

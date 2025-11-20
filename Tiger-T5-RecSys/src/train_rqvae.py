@@ -1,9 +1,16 @@
 import os
 import sys
+
+current_file_path = os.path.abspath(__file__)
+src_dir = os.path.dirname(current_file_path)
+project_root = os.path.dirname(src_dir)
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
 import logging
 import argparse
 import numpy as np
-
+import random # Added
 import torch
 from torch.utils.data import DataLoader, TensorDataset, random_split
 
@@ -19,6 +26,16 @@ MODELS_ROOT = os.path.join(PROJECT_ROOT, 'saved_models')
 
 SBERT_MODEL_NAME = 'sentence-t5-base'
 
+# --- 新增: 设置随机种子 ---
+def set_seed(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+
 def main():
     parser = argparse.ArgumentParser(description="Train RQ-VAE model")
     parser.add_argument("--dataset", type=str, required=True)
@@ -32,8 +49,15 @@ def main():
     parser.add_argument("--batch_size", type=int, default=256)
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--hidden_dim", type=int, default=128)
+    # --- 新增: Seed 参数 ---
+    parser.add_argument("--seed", type=int, default=42, help="Random seed")
+    
     args = parser.parse_args()
     
+    # --- 应用 Seed ---
+    set_seed(args.seed)
+    logging.info(f"Random seed set to: {args.seed}")
+
     DATASET_NAME = args.dataset
     logging.info(f"Training RQ-VAE '{args.model_name}' on dataset '{DATASET_NAME}'")
 
@@ -71,6 +95,7 @@ def main():
     else:
         val_size = len(dataset) // 10
         train_size = len(dataset) - val_size
+        # 注意: set_seed 必须在 random_split 之前调用以保证划分一致
         train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
 
     pin_memory = True if device.type == "cuda" else False
@@ -169,7 +194,6 @@ def main():
             logging.info(f"Saved best model: {MODEL_SAVE_PATH} ({best_val_loss:.6f})")
 
     logging.info(f"Training finished: '{args.model_name}'")
-
 
 if __name__ == "__main__":
     main()
